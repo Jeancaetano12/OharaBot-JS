@@ -14,6 +14,7 @@ const client = new Client({
 
 // Coleção para armazenar comandos na memória
 client.commands = new Collection();
+client.cooldowns = new Collection();
 
 // --- HANDLER DE COMANDOS ---
 const foldersPath = path.join(__dirname, 'commands');

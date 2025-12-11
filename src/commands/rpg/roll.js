@@ -3,6 +3,7 @@ const { rollDice } = require('../../functions/diceRoller');
 const logger = require('../../utils/logger');
 
 module.exports = {
+    cooldown: 5,
     data: new SlashCommandBuilder()
         .setName('roll')
         .setDescription('Rola um dado de RPG (d4, d6, d8, d20)')

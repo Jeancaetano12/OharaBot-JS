@@ -4,6 +4,7 @@ const { checkAdmin } = require('../../functions/checkAdmin');
 require('dotenv').config();
 
 module.exports = {
+    cooldown: 30,
     data: new SlashCommandBuilder().setName('restart').setDescription('Reinicia o processo do bot (Apenas Devs).'),
     async execute(interaction) {
         // --- VALIDAÇÃO CENTRALIZADA ---

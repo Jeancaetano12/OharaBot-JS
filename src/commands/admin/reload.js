@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 module.exports = {
+    cooldown: 10,
     data: new SlashCommandBuilder()
         .setName('reload')
         .setDescription('Recarrega um comando específico (Apenas Devs).')
