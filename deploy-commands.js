@@ -9,7 +9,7 @@ const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
     const commandsPath = path.join(foldersPath, folder);
-    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+    const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith('.js'));
     for (const file of commandFiles) {
         const command = require(path.join(commandsPath, file));
         if ('data' in command && 'execute' in command) {
@@ -25,10 +25,9 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
         console.log(`Começando a atualizar ${commands.length} comandos de aplicativo (/).`);
 
         // O método put substitui totalmente todos os comandos na guilda com o conjunto atual
-        const data = await rest.put(
-            Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.OHARA_ID),
-            { body: commands },
-        );
+        const data = await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.OHARA_ID), {
+            body: commands,
+        });
 
         console.log(`Sucesso ao recarregar ${data.length} comandos de aplicativo (/).`);
     } catch (error) {
