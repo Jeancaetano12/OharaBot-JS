@@ -22,7 +22,7 @@ module.exports = {
     async execute(interaction) {
         const sides = interaction.options.getInteger('lados');
         const result = rollDice(sides);
-        let replyMessage = `🎲 **${interaction.user.username}** rolou um **d${sides}** e obteve: **${result}**`;
+        let replyMessage = `**${interaction.user.username}** rolou um **d${sides}** e obteve: 🎲**${result}**`;
         logger.debug(`Membro ${interaction.user.tag} rodou um d${sides} e obteve ${result}`);
         if (sides === 20) {
             if (result === 20) {
