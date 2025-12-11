@@ -2,6 +2,7 @@ require('dotenv').config();
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
+const logger = require('./utils/logger');
 
 // Cria a instância do cliente
 const client = new Client({
@@ -29,7 +30,7 @@ for (const folder of commandFolders) {
         if ('data' in command && 'execute' in command) {
             client.commands.set(command.data.name, command);
         } else {
-            console.log(`[AVISO] O comando em ${filePath} está faltando a propriedade "data" ou "execute".`);
+            logger.warn(`O comando em ${filePath} está faltando a propriedade "data" ou "execute".`);
         }
     }
 }
@@ -49,4 +50,20 @@ for (const file of eventFiles) {
     }
 }
 
-client.login(process.env.DISCORD_TOKEN);
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error(`Unhandled Rejection at: ${promise}, reason: ${reason}`);
+});
+
+process.on('uncaughtException', (error) => {
+    logger.error(`Uncaught Exception: ${error.message}\n${error.stack}`);
+    process.exit(1);
+});
+
+client
+    .login(process.env.DISCORD_TOKEN)
+    .then(() => {
+        logger.info('OharaBot Acordou 🚨');
+    })
+    .catch((err) => {
+        logger.error(`Falha ao logar o bot${err.message}`);
+    });
