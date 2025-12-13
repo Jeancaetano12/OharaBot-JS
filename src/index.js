@@ -8,6 +8,7 @@ const logger = require('./utils/logger');
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
         // Adicione outros intents conforme necessário (ex: GuildMessages)
     ],
 });
