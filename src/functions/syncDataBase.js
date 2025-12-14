@@ -1,42 +1,56 @@
 const logger = require('../utils/logger');
-/**
- * Extrai dados de todos os membros e processa em lotes.
- * @param {import('discord.js').Guild} guild - O servidor do Discord.
- * @param {number} batchSize - Tamanho do pacote (padrão 25).
- */
+require('dotenv').config();
+
+// Função auxiliar para evitar Rate Limit (espera X ms)
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function syncGuildMembers(guild, batchSize = 25) {
     try {
         const members = await guild.members.fetch();
         logger.info(
-            `Iniciando sincronização de MEMBROS do servidor: ${guild.name}, ${members.size} Membros encontrados, processando...`
+            `Iniciando sincronização de MEMBROS do servidor: ${guild.name}, ${members.size} Membros encontrados. ATENÇÃO: Isso pode demorar para coletar os banners.`
         );
 
         const allMembersData = [];
-        // Mapeamento (Data Transformation)
-        members.forEach((member) => {
-            const user = member.user;
+        let count = 0;
+
+        for (const member of members.values()) {
+            
+            let fullUser;
+            try {
+                fullUser = await guild.client.users.fetch(member.user.id, { force: true });
+            } catch (err) {
+                logger.warn(`Não foi possível buscar detalhes do user ${member.user.tag}: ${err.message}`);
+                fullUser = member.user;
+            }
 
             const memberPayload = {
-                discordId: user.id,
-                username: user.username,
-                globalName: user.globalName,
+                discordId: fullUser.id,
+                username: fullUser.username,
+                globalName: fullUser.globalName,
                 serverNickName: member.nickname,
-                avatarUrl: user.displayAvatarURL({ forceStatic: false, size: 512 }),
+                avatarUrl: fullUser.displayAvatarURL({ forceStatic: false, size: 512 }),
                 serverAvatarUrl: member.avatarURL({ forceStatic: false, size: 512 }),
-                bannerUrl: user.bannerURL({ forceStatic: false, size: 512 }) || null,
+                bannerUrl: fullUser.bannerURL({ forceStatic: false, size: 512 }) || null,
                 // Metadados
-                isBot: user.bot,
+                isBot: fullUser.bot,
                 colorHex: member.displayHexColor,
                 rolesIds: member.roles.cache.map((role) => role.id),
                 // Datas
-                accountCreatedAt: user.createdAt.toISOString(),
+                accountCreatedAt: fullUser.createdAt.toISOString(),
                 joinedServerAt: member.joinedAt ? member.joinedAt.toISOString() : null,
                 premiumSince: member.premiumSince ? member.premiumSince.toISOString() : null,
             };
 
             allMembersData.push(memberPayload);
-        });
+            count++;
+
+            // Log de progresso a cada 50 usuários para você não achar que travou
+            if (count % 10 === 0) {
+                logger.debug(`Processados ${count}/${members.size} usuários...`);
+            }
+            await sleep(200); 
+        }
 
         const totalBatches = Math.ceil(allMembersData.length / batchSize);
 
@@ -45,7 +59,6 @@ async function syncGuildMembers(guild, batchSize = 25) {
             const end = start + batchSize;
             const batch = allMembersData.slice(start, end);
 
-            // Envia pro back-end futuramente
             await sendBatchToDatabase(batch, i + 1, totalBatches);
         }
         logger.info('✅ Sincronização de membros finalizada com sucesso.');
@@ -57,11 +70,23 @@ async function syncGuildMembers(guild, batchSize = 25) {
 }
 
 async function sendBatchToDatabase(data, currentBatch, totalBatches) {
-    // Simula delay de rede (ex: 500ms)
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    logger.debug(`[API MOCK] Enviando pacote ${currentBatch}/${totalBatches} com ${data.length} usuários.`);
-    logger.debug(`Exemplo de dado: ${JSON.stringify(data[0])}`); // Descomente para ver o JSON real
+   // (Seu código original aqui continua igual)
+   const backEndUrl = `${process.env.BACK_END_URL}/membros`;
+    logger.debug(`Enviando lote ${currentBatch}/${totalBatches} com ${data.length} membros para: ${backEndUrl}`);
+    const response = await fetch(backEndUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.BOT_KEY,
+        },
+        body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+        const errorText = await response.text();
+        logger.error(`Falha ao enviar membros para o banco de dados. Status: ${response.status}`);
+        throw new Error(`Falha no pacote ${currentBatch}: Status ${response.status} - ${errorText}`);
+    }
 }
 
 module.exports = { syncGuildMembers };

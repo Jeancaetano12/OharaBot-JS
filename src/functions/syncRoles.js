@@ -1,5 +1,5 @@
 const logger = require('../utils/logger');
-
+require('dotenv').config();
 /**
  * Extrai e sincroniza os cargos do servidor.
  * @param {import('discord.js').Guild} guild - O servidor do Discord.
@@ -34,11 +34,22 @@ async function syncGuildRoles(guild) {
 }
 
 async function sendRolesToDatabase(data) {
-    // Simula delay de rede
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
-    logger.debug(`[API MOCK] Enviando ${data.length} cargos para o banco de dados.`);
-    logger.debug(`Payload exemplo: ${JSON.stringify(data[1])}`);
+    const backEndUrl = `${process.env.BACK_END_URL}/cargos`;
+    logger.debug(`Enviando ${data.length} cargos para: ${backEndUrl}`);
+    const response = await fetch(backEndUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': process.env.BOT_KEY,
+        },
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+        const errorText = await response.text();
+        logger.error(`Falha ao enviar cargos para o banco de dados. Status: ${response.status}`);
+        throw new Error(`API respondeu com status ${response.status}: ${errorText}`);
+    }
+    logger.debug(`Sucesso! Back-end processou o lote de cargos.`);
 }
 
 module.exports = { syncGuildRoles };
