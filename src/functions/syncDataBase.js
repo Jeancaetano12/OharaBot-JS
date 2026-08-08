@@ -4,7 +4,7 @@ require('dotenv').config();
 // Função auxiliar para evitar Rate Limit (espera X ms)
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function syncGuildMembers(guild, batchSize = 25) {
+async function syncGuildMembers(guild, batchSize = 4) {
     try {
         const members = await guild.members.fetch();
         logger.info(
@@ -32,10 +32,11 @@ async function syncGuildMembers(guild, batchSize = 25) {
                 avatarUrl: fullUser.displayAvatarURL({ forceStatic: false, size: 512 }),
                 serverAvatarUrl: member.avatarURL({ forceStatic: false, size: 512 }),
                 bannerUrl: fullUser.bannerURL({ forceStatic: false, size: 512 }) || null,
+                serverBannerUrl: member.bannerURL({ forceStatic: false, size: 512 }) || null,
                 // Metadados
                 isBot: fullUser.bot,
                 colorHex: member.displayHexColor,
-                rolesIds: member.roles.cache.map((role) => role.id),
+                rolesIds: member.roles.cache.filter((role) => role.id !== guild.id).map((role) => role.id), // Ignora @everyone
                 // Datas
                 accountCreatedAt: fullUser.createdAt.toISOString(),
                 joinedServerAt: member.joinedAt ? member.joinedAt.toISOString() : null,
@@ -84,7 +85,6 @@ async function sendBatchToDatabase(data, currentBatch, totalBatches) {
     
     if (!response.ok) {
         const errorText = await response.text();
-        logger.error(`Falha ao enviar membros para o banco de dados. Status: ${response.status}`);
         throw new Error(`Falha no pacote ${currentBatch}: Status ${response.status} - ${errorText}`);
     }
 }

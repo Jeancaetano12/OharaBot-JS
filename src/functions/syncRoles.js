@@ -12,7 +12,9 @@ async function syncGuildRoles(guild) {
             `Iniciando sincronização de CARGOS do servidor: ${guild.name}, ${roles.size} Cargos encontrados, processando...`
         );
 
-        const allRolesData = roles.map((role) => {
+        const allRolesData = roles
+            .filter((role) => role.id !== guild.id) // Ignora o cargo @everyone
+            .map((role) => {
             return {
                 discordId: role.id,
                 name: role.name,
@@ -24,6 +26,11 @@ async function syncGuildRoles(guild) {
                 isHoist: role.hoist, // Se aparece separado na lista de membros
             };
         });
+
+        if (allRolesData.length === 0) {
+            logger.warn('Nenhum cargo encontrado para sincronizar (além do @everyone).');
+            return 0;
+        }
         await sendRolesToDatabase(allRolesData);
         logger.info('✅ Sincronização de cargos finalizada com sucesso.');
         return allRolesData.length;
@@ -46,7 +53,6 @@ async function sendRolesToDatabase(data) {
     });
     if (!response.ok) {
         const errorText = await response.text();
-        logger.error(`Falha ao enviar cargos para o banco de dados. Status: ${response.status}`);
         throw new Error(`API respondeu com status ${response.status}: ${errorText}`);
     }
     logger.debug(`Sucesso! Back-end processou o lote de cargos.`);
