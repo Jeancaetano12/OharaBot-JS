@@ -25,7 +25,7 @@ $ node .\deploy-commands.js
 Notas:
 
 -   Você precisa ter as `EXTENSÕES oficiais do ESLint e do Prettier instaladas` no seu VS Code para as configurações do ESlint e Prettier funcionarem corretamente.
--   Iniciando no modo `DESENVOLVIMENTO` o bot reinicia automaticamente diante de qualquer mudança no codigo. Ao implementar novos comandos com "/" ainda é necessario atualizar manualmente.
+-   Iniciando no modo `DESENVOLVIMENTO` o bot reinicia automaticamente diante de qualquer mudança no codigo (Graças ao `nodemon`). Ao implementar novos comandos com "/" ainda é necessario atualizar manualmente.
 
 # Estrutura do Projeto:
 
