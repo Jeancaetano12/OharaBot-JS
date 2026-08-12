@@ -27,7 +27,7 @@ function startServer(client) {
         }
     });
 
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
         logger.info(`Servidor web rodando na porta ${PORT} 🌐`);
     });
 }
