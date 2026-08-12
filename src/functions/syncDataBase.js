@@ -4,7 +4,7 @@ require('dotenv').config();
 // Função auxiliar para evitar Rate Limit (espera X ms)
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function syncGuildMembers(guild, batchSize = 4) {
+async function syncGuildMembers(guild, batchSize = 15) {
     try {
         const members = await guild.members.fetch();
         logger.info(

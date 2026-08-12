@@ -65,6 +65,10 @@ client
     .login(process.env.DISCORD_TOKEN)
     .then(() => {
         logger.info('OharaBot Acordou 🚨');
+        
+        // Inicia o servidor web passando a instância do bot
+        const { startServer } = require('./api/server');
+        startServer(client);
     })
     .catch((err) => {
         logger.error(`Falha ao logar o bot${err.message}`);
