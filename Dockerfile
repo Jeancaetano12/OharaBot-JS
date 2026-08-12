@@ -8,5 +8,5 @@ COPY . .
 
 EXPOSE 3001
 
-CMD ["bun", "run", "bun deploy-commands.js && bun run start"]
+CMD ["bun", "run", "start"]
 
